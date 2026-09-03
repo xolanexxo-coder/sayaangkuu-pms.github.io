@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Untuk Sayang ❤️</title>
+  <link rel="icon" href="img/flowers.png" type="image/x-icon">
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%; margin: 0; padding: 0;
+      overflow: hidden; background: #000;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body { font-family: Georgia, "Times New Roman", serif; }
+
+    #opening {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: white;
+      text-align: center;
+      background:
+        radial-gradient(circle at 50% 42%, rgba(255, 80, 160, .16), transparent 30%),
+        radial-gradient(circle at 50% 50%, #18000d 0%, #050005 48%, #000 100%);
+      transition: opacity .7s ease, visibility .7s ease;
+    }
+    #opening.hide {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .greetings {
+      display: flex;
+      justify-content: center;
+      gap: .02em;
+      font-size: clamp(3rem, 15vw, 6rem);
+      font-weight: 900;
+      letter-spacing: .02em;
+      line-height: 1;
+      margin-bottom: 22px;
+    }
+    .greetings span {
+      animation: glow 2.5s ease-in-out infinite;
+    }
+    .greetings span:nth-child(2){animation-delay:.2s}
+    .greetings span:nth-child(3){animation-delay:.4s}
+    .greetings span:nth-child(4){animation-delay:.6s}
+    .greetings span:nth-child(5){animation-delay:.8s}
+    .greetings span:nth-child(6){animation-delay:1s}
+    @keyframes glow {
+      0%,100% { color:#fff; text-shadow:0 0 12px #ff4f9a,0 0 35px #ff4f9a,0 0 80px #ff4f9a; }
+      10%,90% { color:#211018; text-shadow:none; }
+    }
+
+    .description {
+      font-family: Arial, sans-serif;
+      font-size: clamp(1rem, 4.5vw, 1.35rem);
+      margin-bottom: 24px;
+      color: #ffe8f2;
+    }
+
+    #openBtn {
+      appearance: none;
+      border: 1px solid rgba(255,255,255,.35);
+      border-radius: 999px;
+      padding: 13px 30px;
+      min-width: 150px;
+      color: white;
+      background: linear-gradient(135deg, #ff3f8e, #a90055);
+      box-shadow: 0 0 22px rgba(255, 63, 142, .45);
+      font: 700 1rem Arial, sans-serif;
+      cursor: pointer;
+      touch-action: manipulation;
+      user-select: none;
+    }
+    #openBtn:active { transform: scale(.96); }
+
+    #flowerFrame {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      opacity: 0;
+      pointer-events: none;
+      background: #000;
+      transition: opacity .8s ease;
+    }
+    #flowerFrame.show { opacity: 1; pointer-events: auto; }
+
+    #musicHint {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      z-index: 20;
+      color: rgba(255,255,255,.65);
+      font: 12px Arial, sans-serif;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <section id="opening">
+    <div class="greetings">
+      <span>S</span><span>A</span><span>Y</span><span>A</span><span>N</span><span>G</span>
+    </div>
+    <div class="description">Aku punya sesuatu buat sayang... ❤️</div>
+    <button id="openBtn" type="button">OPEN ❤️</button>
+  </section>
+
+  <!-- Lagu berada di INDEX agar tidak mati saat flower.html dibuka. -->
+  <audio id="music" loop preload="auto" playsinline>
+    <source src="cas.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Flower tetap memakai flower.html asli, jadi animasinya tidak dirombak. -->
+  <iframe id="flowerFrame" src="about:blank" title="Flowers"></iframe>
+  <div id="musicHint">♪ music on</div>
+
+  <script>
+    const openBtn = document.getElementById('openBtn');
+    const opening = document.getElementById('opening');
+    const frame = document.getElementById('flowerFrame');
+    const music = document.getElementById('music');
+    const musicHint = document.getElementById('musicHint');
+    let opened = false;
+
+    function openSurprise(event) {
+      if (event) event.preventDefault();
+      if (opened) return;
+      opened = true;
+
+      // PENTING: play() dipanggil langsung dari sentuhan/click yang sama.
+      music.volume = 0.8;
+      const playPromise = music.play();
+
+      // Flower dibuka di iframe sehingga dokumen index tetap hidup dan musik tidak putus.
+      frame.src = 'flower.html';
+      frame.classList.add('show');
+      opening.classList.add('hide');
+
+      if (playPromise && typeof playPromise.then === 'function') {
+        playPromise.then(() => {
+          musicHint.style.display = 'block';
+          setTimeout(() => musicHint.style.display = 'none', 2500);
+        }).catch(() => {
+          // Kalau browser benar-benar menolak audio, tombol tetap tidak mengulang navigasi.
+          // Pengguna bisa mengetuk layar sekali lagi hanya jika browser meminta izin audio.
+          opened = false;
+          opening.classList.remove('hide');
+          frame.classList.remove('show');
+          frame.src = 'about:blank';
+          alert('Musiknya diblokir browser. Tekan OPEN sekali lagi untuk mengizinkan musik.');
+        });
+      }
+    }
+
+    openBtn.addEventListener('click', openSurprise, { passive: false });
+    openBtn.addEventListener('touchend', openSurprise, { passive: false });
+  </script>
+</body>
+</html>
